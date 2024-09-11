@@ -1,17 +1,17 @@
+import ReactMarkdown from "react-markdown";
 import { Avatar } from "@mui/joy";
 import Box from "@mui/joy/Box";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 
+import { User } from "../types";
+
 type ChatBubbleProps = {
   body: string;
-  variant: "solid" | "outlined";
   created_at: string;
-  user: {
-    login: string;
-    avatar_url: string;
-  };
+  user: User;
+  variant: "solid" | "outlined";
 };
 
 export default function ChatBubble({ body, variant, created_at, user }: ChatBubbleProps) {
@@ -36,9 +36,38 @@ export default function ChatBubble({ body, variant, created_at, user }: ChatBubb
               borderTopLeftRadius: 0,
             }}
           >
-            <Typography level="body-sm" color="primary">
+            <ReactMarkdown
+              components={{
+                blockquote: ({ children }) => (
+                  <Box
+                    sx={{
+                      borderLeft: "2px solid",
+                      borderColor: "divider",
+                      pl: 2,
+                      py: 1,
+                    }}
+                  >
+                    {children}
+                  </Box>
+                ),
+                code({ className, children, ...props }) {
+                  return (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                },
+                p: ({ children }) => <Typography component="div">{children}</Typography>,
+                strong: ({ children }) => <Typography component="strong">{children}</Typography>,
+                a: ({ children, href }) => (
+                  <Typography component="a" href={href} style={{ color: "blue" }}>
+                    {children}
+                  </Typography>
+                ),
+              }}
+            >
               {body}
-            </Typography>
+            </ReactMarkdown>
           </Sheet>
         </Box>
       </Box>

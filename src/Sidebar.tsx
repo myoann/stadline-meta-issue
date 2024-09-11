@@ -1,7 +1,17 @@
 import Input from "@mui/joy/Input";
 import Sheet from "@mui/joy/Sheet";
 
-export default function Sidebar() {
+import { User } from "../types";
+
+import UserList from "./UserList";
+
+type SidebarProps = {
+  issueLink: string;
+  onChangeIssueLink: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  users?: User[];
+};
+
+export default function Sidebar({ issueLink, onChangeIssueLink, users }: SidebarProps) {
   return (
     <Sheet
       className="Sidebar"
@@ -19,7 +29,9 @@ export default function Sidebar() {
         borderColor: "divider",
       }}
     >
-      <Input value="facebook/react/issues/7901" />
+      <Input value={issueLink} onChange={onChangeIssueLink} />
+
+      <UserList users={users} onToggleUser={() => {}} />
     </Sheet>
   );
 }

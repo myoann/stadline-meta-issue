@@ -9,6 +9,7 @@ function useFetch<T>(
   return useInfiniteQuery({
     ...options,
     queryKey: [config],
+    // TODO: Add error handling
     queryFn: ({ pageParam: url }) => axios.request<T>({ ...config, url }),
     select(data): T {
       const initialData = data.pages[0].data;

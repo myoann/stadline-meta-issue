@@ -2,36 +2,25 @@ import Chip from "@mui/joy/Chip";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
+
+import { Comment, Event, Issue } from "../types";
+
 import ChatBubble from "./ChatBubble";
-import useFetch from "./useFetch";
+import EventInfo from "./EventInfo";
 
-type User = {
-  login: string;
-  avatar_url: string;
+/** Type guard to check if the item is an event */
+const isEvent = (item: Comment | Event): item is Event => {
+  return (item as Event).event !== undefined;
 };
 
-type Issue = {
-  id: number;
-  created_at: string;
-  user: User;
-
-  number: number;
-  title: string;
-  body: string;
-  comments_url: string;
+type MessagesPaneProps = {
+  comments?: Comment[];
+  events?: Event[];
+  issue?: Issue;
 };
 
-type Comment = {
-  id: number;
-  created_at: string;
-  user: User;
-
-  body: string;
-};
-
-export default function MessagesPane() {
-  const issue = useFetch<Issue>({ url: "https://api.github.com/repos/facebook/react/issues/7901" });
-  const comments = useFetch<Comment[]>({ url: issue.data?.comments_url }, { enabled: issue.isFetched });
+export default function MessagesPane({ comments = [], events = [], issue }: MessagesPaneProps) {
+  const combinedData = [...comments, ...events].sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
 
   return (
     <Sheet
@@ -42,7 +31,7 @@ export default function MessagesPane() {
         backgroundColor: "background.level1",
       }}
     >
-      {issue.data && (
+      {issue && (
         <Stack
           direction="column"
           justifyContent="space-between"
@@ -68,25 +57,31 @@ export default function MessagesPane() {
                   borderRadius: "sm",
                 }}
               >
-                #{issue.data?.number}
+                #{issue.number}
               </Chip>
             }
           >
-            {issue.data.title}
+            {issue.title}
           </Typography>
-          <Typography level="body-sm">{issue.data.user.login}</Typography>
+          <Typography level="body-sm">{issue.user.login}</Typography>
         </Stack>
       )}
-      {comments.data && (
+
+      {combinedData.length && (
         <Stack spacing={2} justifyContent="flex-end" px={2} py={3}>
-          <ChatBubble variant="solid" {...issue.data!} />
-          {comments.data.map((comment) => (
-            <ChatBubble
-              key={comment.id}
-              variant={comment.user.login === issue.data!.user.login ? "solid" : "outlined"}
-              {...comment}
-            />
-          ))}
+          <ChatBubble variant="solid" {...issue!} />
+
+          {combinedData.map((item) =>
+            isEvent(item) ? (
+              <EventInfo key={item.id} created_at={item.created_at} eventType={item.event} user={item.actor} />
+            ) : (
+              <ChatBubble
+                key={item.id}
+                variant={item.user.login === issue!.user.login ? "solid" : "outlined"}
+                {...item}
+              />
+            ),
+          )}
         </Stack>
       )}
     </Sheet>
